@@ -7,7 +7,7 @@
  real(8), intent(in), dimension(:,:) :: A
  integer(4), intent(out) :: x1,y1,x2,y2
  integer(4) :: mpiErr, mpiSize, mpiRank
- integer(4) :: n,m,l,i,j,k,left_border,right_border, coord(4)!переменные n,m - размерность матрицы. i,j,k - счётчики. l - служебная переменная, её назначение понятно из контекста. И я серьёзно не знаю, как, а, главное, зачем эти переменные вообще по-другому называть  
+ integer(4) :: n,m,l,i,j,k,left_border,right_border, coord(4)
  real(8) candidate_for_max_summ,max_summ
  real(8),allocatable, dimension(:) :: array_of_continious_summ, array_of_candidate_for_max_summ
  integer, allocatable, dimension(:) :: array_of_candidate_for_x1, array_of_candidate_for_x2, array_of_candidate_for_y1, array_of_candidate_for_y2
@@ -53,13 +53,11 @@
      allocate(array_of_candidate_for_y2(mpiSize))
      array_of_candidate_for_max_summ=0
    endif
-   call mpi_barrier(MPI_COMM_WORLD, mpiErr)
    call mpi_gather(max_summ, 1, MPI_REAL8, array_of_candidate_for_max_summ, 1, MPI_REAL8, 0, MPI_COMM_WORLD, mpiErr)
    call mpi_gather(x1, 1, MPI_INTEGER4, array_of_candidate_for_x1, 1, MPI_INTEGER4, 0, MPI_COMM_WORLD, mpiErr)
    call mpi_gather(x2, 1, MPI_INTEGER4, array_of_candidate_for_x2, 1, MPI_INTEGER4, 0, MPI_COMM_WORLD, mpiErr)
    call mpi_gather(y1, 1, MPI_INTEGER4, array_of_candidate_for_y1, 1, MPI_INTEGER4, 0, MPI_COMM_WORLD, mpiErr)
-   call mpi_gather(y2, 1, MPI_INTEGER4, array_of_candidate_for_y2, 1, MPI_INTEGER4, 0, MPI_COMM_WORLD, mpiErr)
-   call mpi_barrier(MPI_COMM_WORLD, mpiErr)  
+   call mpi_gather(y2, 1, MPI_INTEGER4, array_of_candidate_for_y2, 1, MPI_INTEGER4, 0, MPI_COMM_WORLD, mpiErr)  
    if (mpiRank==0) then
      candidate_for_max_summ=array_of_candidate_for_max_summ(1)
      j=1
@@ -74,7 +72,6 @@
      coord(4)=array_of_candidate_for_y2(j)
      x1=coord(1); x2=coord(2); y1=coord(3); y2=coord(4) 
    endif
-   call mpi_barrier(MPI_COMM_WORLD, mpiErr)
    call mpi_bcast(coord, 4, MPI_INTEGER4, 0, MPI_COMM_WORLD, mpiErr)
    x1=coord(1); x2=coord(2); y1=coord(3); y2=coord(4)  
    if (mpiRank==0) then
